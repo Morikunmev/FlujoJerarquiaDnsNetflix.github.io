@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({ startOnLoad: true });
+  </script>
+</head>
+<body>
+  <div class="mermaid">
+    sequenceDiagram
+    participant Cliente as PC del Usuario
+    participant Recursivo as Servidor DNS Recursivo (ISP)
+    participant Raíz as Servidor Raíz (.)
+    participant TLD as Servidor TLD (.com)
+    participant NS_Netflix as Servidores NS de Netflix
+    participant Autoritativo as Servidor Autoritativo
+
+    Cliente->>+Recursivo: Consulta por netflix.com
+    Note over Recursivo: Verifica en caché (No encontrado o expirado)
+    Recursivo->>+Raíz: ¿Dónde están los servidores para .com?
+    Raíz-->>-Recursivo: Lista de servidores TLD para .com
+    Recursivo->>+TLD: ¿Dónde están los servidores para netflix.com?
+    TLD-->>-Recursivo: Lista de NS para netflix.com (ns-1665.awsdns-16.co.uk, etc.)
+    Recursivo->>+NS_Netflix: ¿Cuáles son los registros A para netflix.com?
+    NS_Netflix-->>-Recursivo: IP: 52.23.202.33 (TTL: 300 segundos)
+    Note over Recursivo: Almacena en caché por 300 segundos
+    Recursivo-->>-Cliente: IP de netflix.com: 52.23.202.33
+
+    Note over Cliente, Autoritativo: 2 minutos después
+
+    Cliente->>+Recursivo: Consulta por signup.netflix.com
+    Note over Recursivo: Tiene netflix.com en caché, pero necesita el subdominio
+    Recursivo->>+NS_Netflix: ¿Cuáles son los registros para signup.netflix.com?
+    NS_Netflix-->>-Recursivo: CNAME: netflix.com IP: 52.23.202.33 (TTL: 300s)
+    Recursivo-->>-Cliente: IP de signup.netflix.com: 52.23.202.33
+  </div>
+</body>
+</html>
